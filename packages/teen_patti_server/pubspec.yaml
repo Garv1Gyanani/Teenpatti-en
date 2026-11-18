@@ -1,0 +1,17 @@
+name: teen_patti_server
+description: Authoritative Teen Patti multiplayer table worker and wake-on-demand bot orchestrator.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  http: ^1.6.0
+  realtime_client: ^2.5.0
+  teen_patti_core:
+    path: ../teen_patti_core
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

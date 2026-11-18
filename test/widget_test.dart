@@ -1,14 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:teen_patti/app.dart';
+import 'package:teen_patti/core/session/app_session_store.dart';
 import 'package:teen_patti/features/friends/data/repositories/friends_repository_impl.dart';
 import 'package:teen_patti/features/friends/domain/entities/friend_member.dart';
 import 'package:teen_patti/features/friends/domain/usecases/get_friends_data_usecase.dart';
 import 'package:teen_patti/features/friends/presentation/controllers/friends_controller.dart';
 import 'package:teen_patti/features/game_table/data/repositories/game_table_repository_impl.dart';
 import 'package:teen_patti/features/game_table/domain/entities/table_state.dart';
-import 'package:teen_patti/features/game_table/domain/usecases/get_table_state_usecase.dart';
-import 'package:teen_patti/features/game_table/domain/usecases/perform_player_action_usecase.dart';
 import 'package:teen_patti/features/game_table/presentation/controllers/game_table_controller.dart';
 import 'package:teen_patti/features/home/data/repositories/home_repository_impl.dart';
 import 'package:teen_patti/features/home/domain/entities/game_mode_item.dart';
@@ -134,27 +135,38 @@ void main() {
     controller.dispose();
   });
 
-  test('GameTableController loads table and handles Chaal and Pack actions',
+  test('GameTableController loads table and runs Blind, See Cards, Chaal and Pack against AI',
       () async {
-    const repo = GameTableRepositoryImpl();
-    final controller = GameTableController(
-      getTableStateUseCase: const GetTableStateUseCase(repository: repo),
-      performPlayerActionUseCase:
-          const PerformPlayerActionUseCase(repository: repo),
+    final repo = GameTableRepositoryImpl(random: Random(42));
+    final controller = GameTableController.forRepository(
+      repository: repo,
+      botTurnDelay: Duration.zero,
     );
 
     await controller.loadTable();
     expect(controller.isLoading, isFalse);
     expect(controller.state, isNotNull);
-    expect(controller.state!.potAmount, 1200);
-    expect(controller.state!.localPlayer.chips, 25000);
+    expect(controller.state!.potAmount, 700);
+    expect(controller.state!.localPlayer.chips, 24900);
+    expect(controller.state!.localPlayer.hasSeenCards, isFalse);
+    expect(controller.canLocalBlind, isTrue);
+    expect(controller.canLocalChaal, isFalse);
+
+    await controller.seeCards();
+    expect(controller.state!.localPlayer.hasSeenCards, isTrue);
+    expect(controller.canLocalBlind, isFalse);
+    expect(controller.canLocalChaal, isTrue);
 
     await controller.performAction(PlayerTableAction.chaal);
-    expect(controller.state!.potAmount, 1600);
-    expect(controller.state!.localPlayer.chips, 24600);
+    expect(controller.state!.potAmount, greaterThanOrEqualTo(900));
+    expect(controller.state!.localPlayer.totalBet, greaterThanOrEqualTo(300));
 
-    await controller.performAction(PlayerTableAction.pack);
-    expect(controller.state!.localPlayer.hasPacked, isTrue);
+    if (!controller.state!.isRoundOver) {
+      await controller.performAction(PlayerTableAction.pack);
+      expect(controller.state!.localPlayer.hasPacked, isTrue);
+      expect(controller.state!.isRoundOver, isTrue);
+      expect(controller.state!.roundResult, isNotNull);
+    }
 
     controller.dispose();
   });
@@ -209,6 +221,8 @@ void main() {
   testWidgets(
       'AceSocietyApp flows from splash to landing to profile setup to home to lobby to table',
       (WidgetTester tester) async {
+    AppSessionStore.setInstance(AppSessionStore());
+
     await tester.pumpWidget(const AceSocietyApp());
     await tester.pump();
 
@@ -235,6 +249,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Set Up Your Profile'), findsNothing);
+    expect(find.text('RoyalAce'), findsOneWidget);
     expect(find.text('Your Teen Patti\nClub'), findsOneWidget);
     expect(find.text('25,000'), findsOneWidget);
     expect(find.text('Daily Reward'), findsOneWidget);
@@ -251,25 +266,38 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('Teen Patti'), findsOneWidget);
-    expect(find.text('₹1,200'), findsOneWidget);
+    expect(find.text('Emerald Room'), findsOneWidget);
+    expect(find.text('RoyalAce'), findsOneWidget);
+    expect(find.text('₹300'), findsOneWidget);
     expect(find.text('Your Turn'), findsOneWidget);
+    expect(find.text('See Cards'), findsOneWidget);
     expect(find.text('Chaal'), findsOneWidget);
 
-    await tester.tap(find.text('Show'));
+    // Reveal local cards and transition from Blind to Seen betting.
+    await tester.tap(find.text('See Cards'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('See Cards'), findsNothing);
 
-    expect(find.text('You Won!'), findsOneWidget);
-    expect(find.text('+₹4,800'), findsOneWidget);
+    // Fold hand and let client-side AI bots play out the round to showdown.
+    await tester.tap(find.text('Pack'));
+    await tester.pump();
+    expect(find.text('Deal New Hand'), findsOneWidget);
+
+    for (var i = 0; i < 40; i++) {
+      if (find.text('Play Again').evaluate().isNotEmpty) break;
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
     expect(find.text('Back to Lobby'), findsOneWidget);
     expect(find.text('Play Again'), findsOneWidget);
+    expect(AppSessionStore.instance.gamesPlayed, 1);
+    expect(AppSessionStore.instance.chips, 24950);
 
     await tester.tap(find.text('Play Again'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('You Won!'), findsNothing);
-    expect(find.text('₹1,200'), findsOneWidget);
+    expect(find.text('Play Again'), findsNothing);
+    expect(find.text('₹300'), findsOneWidget);
   });
 }

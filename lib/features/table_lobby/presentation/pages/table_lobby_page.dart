@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/session/app_session_store.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/ace_brand_header.dart';
 import '../../../../core/widgets/chip_balance_pill.dart';
+import '../../../game_table/domain/entities/game_table_config.dart';
+import '../../domain/entities/game_table_room.dart';
 import '../controllers/table_lobby_controller.dart';
 import '../widgets/table_lobby_stats_bar.dart';
 import '../widgets/table_lobby_tier_chips.dart';
@@ -40,6 +45,38 @@ class _TableLobbyPageState extends State<TableLobbyPage> {
   void dispose() {
     widget.controller.dispose();
     super.dispose();
+  }
+
+  void _handleJoinRoom(GameTableRoom room) {
+    if (widget.chips < room.entryChips) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Need ₹${formatIndianNumber(room.entryChips)} chips to join ${room.name}.',
+            ),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Add Chips',
+              onPressed: widget.onAddChipsTap,
+            ),
+          ),
+        );
+      return;
+    }
+
+    Navigator.of(context).pushNamed(
+      AppRoutes.gameTable,
+      arguments: GameTableConfig(
+        tableName: room.name,
+        minStake: room.smallBlind,
+        maxStake: room.bigBlind * 16,
+        maxPlayers: room.maxSeats,
+        entryChips: room.entryChips,
+        isOnline: AppSessionStore.instance.supabaseClient.isConfigured,
+      ),
+    );
   }
 
   @override
@@ -81,13 +118,7 @@ class _TableLobbyPageState extends State<TableLobbyPage> {
                     child: Text(
                       'Choose a Table',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontFamilyFallback: ['Times New Roman', 'serif'],
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.forestGreen,
-                      ),
+                      style: AppTextStyles.screenBarTitle,
                     ),
                   ),
                   ChipBalancePill(
@@ -158,14 +189,7 @@ class _TableLobbyPageState extends State<TableLobbyPage> {
                       children: [
                         const AceBrandHeader(
                           clubSize: 20,
-                          titleStyle: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontFamilyFallback: ['Times New Roman', 'serif'],
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 1.5,
-                            color: AppColors.forestGreen,
-                          ),
+                          titleStyle: AppTextStyles.brandCompact,
                         ),
                         const SizedBox(height: 8),
                         const Text(
@@ -198,13 +222,7 @@ class _TableLobbyPageState extends State<TableLobbyPage> {
                 children: [
                   const Text(
                     'Available Tables',
-                    style: TextStyle(
-                      fontFamily: 'Georgia',
-                      fontFamilyFallback: ['Times New Roman', 'serif'],
-                      fontSize: 19,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.forestGreen,
-                    ),
+                    style: AppTextStyles.sectionHeading,
                   ),
                   const Spacer(),
                   GestureDetector(
@@ -257,8 +275,7 @@ class _TableLobbyPageState extends State<TableLobbyPage> {
                     padding: const EdgeInsets.only(bottom: 10),
                     child: TableRoomCard(
                       room: room,
-                      onJoin: () =>
-                          Navigator.of(context).pushNamed(AppRoutes.gameTable),
+                      onJoin: () => _handleJoinRoom(room),
                     ),
                   ),
                 ),

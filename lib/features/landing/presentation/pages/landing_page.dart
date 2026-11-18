@@ -3,10 +3,12 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/session/supabase_sync_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/ace_background_waves.dart';
 import '../../../../core/widgets/ace_brand_header.dart';
+import '../../../../core/widgets/club_auth_dialog.dart';
 import '../../domain/entities/landing_entry_mode.dart';
 import '../controllers/landing_controller.dart';
 import '../widgets/landing_action_buttons.dart';
@@ -54,16 +56,37 @@ class _LandingPageState extends State<LandingPage>
       if (mode == LandingEntryMode.guest) {
         Navigator.of(context).pushNamed(AppRoutes.profileSetup);
       } else if (mode == LandingEntryMode.signIn) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('Sign In flow coming soon.'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+        _openSignInDialog();
       }
     }
+  }
+
+  Future<void> _openSignInDialog() async {
+    final result = await showDialog<SupabaseAuthResult>(
+      context: context,
+      builder: (_) => const ClubAuthDialog(
+        mode: ClubAuthDialogMode.landingSignIn,
+      ),
+    );
+    if (!mounted || result == null || !result.succeeded) return;
+
+    if (result.requiresEmailConfirmation) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Account created for ${result.email}. Check your email if confirmation is required.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.home,
+      (_) => false,
+    );
   }
 
   @override

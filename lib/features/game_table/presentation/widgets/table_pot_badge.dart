@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/utils/formatters.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/animated_number_text.dart';
 
 /// Center pot pill showing "Pot" label, poker chip icon, and animated amount.
 class TablePotBadge extends StatelessWidget {
@@ -79,24 +80,14 @@ class TablePotBadge extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              AnimatedSwitcher(
+              AnimatedNumberText(
+                value: potAmount,
+                prefix: '₹',
+                animateDecrease: false,
                 duration: const Duration(milliseconds: 260),
-                transitionBuilder: (child, animation) {
-                  return ScaleTransition(
-                    scale: Tween<double>(begin: 0.88, end: 1.0)
-                        .animate(animation),
-                    child: FadeTransition(opacity: animation, child: child),
-                  );
-                },
-                child: Text(
-                  '₹${formatCommaNumber(potAmount)}',
-                  key: ValueKey<int>(potAmount),
-                  style: const TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    letterSpacing: 0.3,
-                  ),
+                style: AppTextStyles.chipBalance.copyWith(
+                  fontSize: 19,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],

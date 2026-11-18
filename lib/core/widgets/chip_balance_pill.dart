@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import '../utils/formatters.dart';
+import '../theme/app_text_styles.dart';
+import 'animated_number_text.dart';
 
 /// Forest-green chip balance pill with poker chip icon and `+` action button.
 class ChipBalancePill extends StatelessWidget {
@@ -28,14 +29,9 @@ class ChipBalancePill extends StatelessWidget {
         children: [
           const _PokerChipIcon(),
           const SizedBox(width: 8),
-          Text(
-            formatCommaNumber(chips),
-            style: const TextStyle(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              letterSpacing: 0.2,
-            ),
+          AnimatedNumberText(
+            value: chips,
+            style: AppTextStyles.chipBalance.copyWith(fontSize: 15.5),
           ),
           const SizedBox(width: 8),
           GestureDetector(

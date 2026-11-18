@@ -142,8 +142,8 @@ class _FriendRow extends StatelessWidget {
                             : const Color(0xFFA8ACA6),
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Flexible(
+                    const SizedBox(width: 4),
+                    Expanded(
                       child: Text(
                         friend.statusText,
                         maxLines: 1,
@@ -159,51 +159,57 @@ class _FriendRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          SizedBox(
-            height: 34,
-            child: friend.isOnline
-                ? FilledButton.icon(
-                    onPressed: onInviteTap,
-                    style: FilledButton.styleFrom(
-                      backgroundColor:
-                          AppColors.sageGreen.withValues(alpha: 0.24),
-                      foregroundColor: AppColors.forestGreen,
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.play_arrow_rounded, size: 17),
-                    label: const Text(
-                      'Invite to Play',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 136),
+            child: SizedBox(
+              height: 34,
+              child: friend.isOnline
+                  ? FilledButton.icon(
+                      onPressed: onInviteTap,
+                      style: FilledButton.styleFrom(
+                        backgroundColor:
+                            AppColors.sageGreen.withValues(alpha: 0.24),
+                        foregroundColor: AppColors.forestGreen,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.play_arrow_rounded, size: 16),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Invite to Play',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    )
+                  : OutlinedButton(
+                      onPressed: onInviteTap,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: AppColors.creamBackground,
+                        foregroundColor: AppColors.forestGreen,
+                        side: const BorderSide(
+                          color: AppColors.forestGreen,
+                          width: 1,
+                        ),
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      child: const Text(
+                        'Invite',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  )
-                : OutlinedButton(
-                    onPressed: onInviteTap,
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: AppColors.creamBackground,
-                      foregroundColor: AppColors.forestGreen,
-                      side: const BorderSide(
-                        color: AppColors.forestGreen,
-                        width: 1,
-                      ),
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                    ),
-                    child: const Text(
-                      'Invite',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+            ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 2),
           IconButton(
             onPressed: onMoreTap,
             visualDensity: VisualDensity.compact,

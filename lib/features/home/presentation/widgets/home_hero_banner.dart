@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/club_suit_painter.dart';
 
 /// Split hero banner featuring the dealer portrait on the left and the
@@ -87,14 +88,7 @@ class HomeHeroBanner extends StatelessWidget {
                   const Text(
                     'Your Teen Patti\nClub',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Georgia',
-                      fontFamilyFallback: ['Times New Roman', 'serif'],
-                      fontSize: 23,
-                      fontWeight: FontWeight.w500,
-                      height: 1.2,
-                      color: AppColors.forestGreen,
-                    ),
+                    style: AppTextStyles.clubHero,
                   ),
                   const SizedBox(height: 10),
                   Row(

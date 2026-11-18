@@ -2,8 +2,9 @@
 class AppInitResult {
   const AppInitResult({
     required this.isReady,
+    this.hasActiveProfile = false,
   });
 
   final bool isReady;
+  final bool hasActiveProfile;
 }
-

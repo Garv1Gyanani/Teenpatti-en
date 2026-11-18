@@ -5,8 +5,6 @@ import '../../domain/usecases/initialize_app_usecase.dart';
 enum SplashStatus { initial, loading, completed, error }
 
 /// Presentation controller for the splash screen.
-///
-/// Depends only on [InitializeAppUseCase] from the domain layer.
 class SplashController extends ChangeNotifier {
   SplashController({
     required InitializeAppUseCase initializeAppUseCase,
@@ -16,6 +14,9 @@ class SplashController extends ChangeNotifier {
 
   SplashStatus _status = SplashStatus.initial;
   SplashStatus get status => _status;
+
+  bool _hasActiveProfile = false;
+  bool get hasActiveProfile => _hasActiveProfile;
 
   bool _isDisposed = false;
 
@@ -27,6 +28,7 @@ class SplashController extends ChangeNotifier {
     _setStatus(SplashStatus.loading);
     try {
       final result = await _initializeAppUseCase();
+      _hasActiveProfile = result.hasActiveProfile;
       _setStatus(result.isReady ? SplashStatus.completed : SplashStatus.error);
     } catch (_) {
       _setStatus(SplashStatus.error);
@@ -45,4 +47,3 @@ class SplashController extends ChangeNotifier {
     super.dispose();
   }
 }
-

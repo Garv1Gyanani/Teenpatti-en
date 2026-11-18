@@ -1,14 +1,25 @@
+import '../../../../core/session/app_session_store.dart';
 import '../../domain/entities/app_init_result.dart';
 import '../../domain/repositories/splash_repository.dart';
 
-/// Default implementation of [SplashRepository] for bootstrapping app state.
+/// Bootstraps local & remote session state during app startup.
 class SplashRepositoryImpl implements SplashRepository {
-  const SplashRepositoryImpl();
+  const SplashRepositoryImpl({this.sessionStore});
+
+  final AppSessionStore? sessionStore;
 
   @override
   Future<AppInitResult> initializeApp() async {
-    // Hook future startup tasks here (e.g., local storage, session check, remote config).
+    final store = sessionStore;
+    if (store != null) {
+      if (!store.isHydrated) {
+        await store.hydrate();
+      }
+      return AppInitResult(
+        isReady: true,
+        hasActiveProfile: store.hasCompletedOnboarding,
+      );
+    }
     return const AppInitResult(isReady: true);
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/game_table_room.dart';
 import 'table_room_thumbnail.dart';
@@ -54,14 +55,7 @@ class TableRoomCard extends StatelessWidget {
                   room.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontFamily: 'Georgia',
-                    fontFamilyFallback: ['Times New Roman', 'serif'],
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.forestGreen,
-                    height: 1.15,
-                  ),
+                  style: AppTextStyles.cardHeading,
                 ),
                 const SizedBox(height: 4),
                 Row(

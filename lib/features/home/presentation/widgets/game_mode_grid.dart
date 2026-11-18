@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/audio/app_audio_cue.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/ace_press_scale.dart';
 import '../../domain/entities/game_mode_item.dart';
 
 /// Four-card horizontal selector for Teen Patti game modes.
@@ -61,62 +63,66 @@ class _GameModeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: isSelected
-          ? AppColors.sageGreen.withValues(alpha: 0.24)
-          : AppColors.inputFill,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
+    return AcePressScale(
+      audioCue: AppAudioCue.uiTap,
+      enableHaptic: true,
+      child: Material(
+        color: isSelected
+            ? AppColors.sageGreen.withValues(alpha: 0.24)
+            : AppColors.inputFill,
         borderRadius: BorderRadius.circular(18),
-        child: Container(
-          height: 104,
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.sageGreen.withValues(alpha: 0.55)
-                  : AppColors.inputBorder.withValues(alpha: 0.75),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                _iconFor(mode.type),
-                size: 28,
-                color: AppColors.forestGreen,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            height: 104,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.sageGreen.withValues(alpha: 0.55)
+                    : AppColors.inputBorder.withValues(alpha: 0.75),
+                width: 1,
               ),
-              const SizedBox(height: 8),
-              Text(
-                mode.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  height: 1.18,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _iconFor(mode.type),
+                  size: 28,
                   color: AppColors.forestGreen,
                 ),
-              ),
-              if (mode.subtitle != null) ...[
-                const SizedBox(height: 2),
+                const SizedBox(height: 8),
                 Text(
-                  mode.subtitle!,
+                  mode.title,
                   textAlign: TextAlign.center,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.mutedText,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.18,
+                    color: AppColors.forestGreen,
                   ),
                 ),
+                if (mode.subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    mode.subtitle!,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.mutedText,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/game_mode_item.dart';
@@ -10,11 +12,16 @@ class HomeController extends ChangeNotifier {
   HomeController({
     required GetHomeDashboardUseCase getDashboardUseCase,
     required ClaimDailyRewardUseCase claimDailyRewardUseCase,
+    Listenable? sessionListenable,
   })  : _getDashboardUseCase = getDashboardUseCase,
-        _claimDailyRewardUseCase = claimDailyRewardUseCase;
+        _claimDailyRewardUseCase = claimDailyRewardUseCase,
+        _sessionListenable = sessionListenable {
+    _sessionListenable?.addListener(_onExternalSessionChanged);
+  }
 
   final GetHomeDashboardUseCase _getDashboardUseCase;
   final ClaimDailyRewardUseCase _claimDailyRewardUseCase;
+  final Listenable? _sessionListenable;
 
   PlayerDashboard? _dashboard;
   PlayerDashboard? get dashboard => _dashboard;
@@ -32,6 +39,19 @@ class HomeController extends ChangeNotifier {
   bool get isClaimingReward => _isClaimingReward;
 
   bool _isDisposed = false;
+
+  void _onExternalSessionChanged() {
+    if (_isDisposed || _isLoading) return;
+    unawaited(_refreshSilently());
+  }
+
+  Future<void> _refreshSilently() async {
+    final latest = await _getDashboardUseCase();
+    if (_isDisposed) return;
+    final hadUnread = _dashboard?.hasUnreadNotifications ?? true;
+    _dashboard = latest.copyWith(hasUnreadNotifications: hadUnread);
+    _notifySafely();
+  }
 
   Future<void> loadDashboard() async {
     _isLoading = true;
@@ -75,6 +95,7 @@ class HomeController extends ChangeNotifier {
 
     try {
       final reward = await _claimDailyRewardUseCase();
+      if (reward <= 0) return null;
       _dashboard = current.copyWith(
         chips: current.chips + reward,
         isDailyRewardClaimed: true,
@@ -95,7 +116,7 @@ class HomeController extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
+    _sessionListenable?.removeListener(_onExternalSessionChanged);
     super.dispose();
   }
 }
-

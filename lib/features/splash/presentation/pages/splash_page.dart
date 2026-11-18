@@ -59,7 +59,10 @@ class _SplashPageState extends State<SplashPage>
     if (!mounted || _hasNavigated) return;
     if (widget.controller.status == SplashStatus.completed) {
       _hasNavigated = true;
-      Navigator.of(context).pushReplacementNamed(AppRoutes.landing);
+      final target = widget.controller.hasActiveProfile
+          ? AppRoutes.home
+          : AppRoutes.landing;
+      Navigator.of(context).pushReplacementNamed(target);
     }
   }
 
